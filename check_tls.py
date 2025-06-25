@@ -12,7 +12,7 @@ bot = telegram.Bot(token=telegram_token)
 async def check_tls():
     print("🕵️ Vérification en cours…")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
         page = await browser.new_page()
         await page.goto(url_tls)
         content = await page.content()
