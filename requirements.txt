@@ -1,3 +1,2 @@
 playwright
-aiohttp
 python-telegram-bot
