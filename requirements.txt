@@ -1,5 +1,2 @@
-selenium
-python-telegram-bot
-asyncio
 playwright
 aiohttp
