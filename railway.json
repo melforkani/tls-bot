@@ -12,7 +12,6 @@
     "commands": [
       "pip install -r requirements.txt",
       "playwright install"
-      "chmod +x start.sh"
     ]
   }
 }
