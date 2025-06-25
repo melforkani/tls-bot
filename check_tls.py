@@ -9,9 +9,9 @@ import asyncio
 import os
 
 # CONFIGURATION
-url_tls = os.getenv("https://fr.tlscontact.com/appointment/ma/maRAK2fr/20067244")
-telegram_token = os.getenv("7702671519:AAG7b9_qsnXZAFH8-rYs3o9qeXa78qzaBvY")
-telegram_chat_id = os.getenv("7554340275")
+url_tls = os.getenv("URL_TLS")
+telegram_token = os.getenv("TELEGRAM_TOKEN")
+telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID")
 check_interval = int(os.getenv("CHECK_INTERVAL", 1200))  # défaut : 20 min
 
 bot = telegram.Bot(token=telegram_token)
