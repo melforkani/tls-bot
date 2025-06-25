@@ -13,5 +13,6 @@
       "pip install -r requirements.txt",
       "playwright install"
     ]
-  }
+  },
+  "start": "echo 'No start needed, only cron runs'"
 }
