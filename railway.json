@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "check": "python3 check_tls.py"
+  },
+  "crons": [
+    {
+      "schedule": "*/20 * * * *",
+      "command": "check"
+    }
+  ]
+}
