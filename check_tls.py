@@ -1,50 +1,54 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
-import telegram
+import os
 import asyncio
+from playwright.async_api import async_playwright
+import aiohttp
 
-# CONFIGURATION
-url_tls = "https://fr.tlscontact.com/appointment/ma/maRAK2fr/20067244"
-telegram_token = "7702671519:AAG7b9_qsnXZAFH8-rYs3o9qeXa78qzaBvY"
-telegram_chat_id = "7554340275"
-check_interval = 1200  # 20 minutes
+# CONFIGURATION via variables d'environnement
+URL_TLS = os.getenv("URL_TLS", "https://fr.tlscontact.com/appointment/ma/maRAK2fr/20067244")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 1200))  # en secondes
 
-# Initialisation du bot Telegram
-bot = telegram.Bot(token=telegram_token)
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 
-# Configuration Selenium
-options = Options()
-options.add_argument("--headless")  # Pas de fenêtre visible
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-driver = webdriver.Chrome(options=options)
+async def send_telegram_message(text: str):
+    async with aiohttp.ClientSession() as session:
+        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
+        async with session.post(TELEGRAM_API_URL, data=payload) as resp:
+            if resp.status != 200:
+                print(f"Erreur Telegram: statut {resp.status}")
+            else:
+                print("Message Telegram envoyé.")
 
-def check_tls():
+async def check_tls(page):
     print("🕵️ Vérification de la disponibilité...")
-    driver.get(url_tls)
+    await page.goto(URL_TLS, wait_until="domcontentloaded")
 
     try:
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "tls-appointment-content"))
-        )
+        # Attente de la présence de l'élément principal des créneaux
+        await page.wait_for_selector(".tls-appointment-content", timeout=15000)
 
-        time_slots = driver.find_elements(By.CSS_SELECTOR, ".tls-appointment-time-picker .tls-appointment-month-slot")
+        # Recherche des créneaux
+        slots = await page.query_selector_all(".tls-appointment-time-picker .tls-appointment-month-slot")
 
-        if len(time_slots) > 0:
+        if len(slots) > 0:
             print("✅ Créneau potentiellement dispo")
-            asyncio.run(bot.send_message(chat_id=telegram_chat_id, text="✅ Créneau TLScontact trouvé ! Vérifie ici : " + url_tls))
+            await send_telegram_message(f"✅ Créneau TLScontact trouvé ! Vérifie ici : {URL_TLS}")
         else:
             print("❌ Aucun créneau visible")
-            asyncio.run(bot.send_message(chat_id=telegram_chat_id, text="❌ Aucun créneau TLScontact disponible pour le moment."))
+            await send_telegram_message(f"❌ Aucun créneau TLScontact disponible pour le moment.")
     except Exception as e:
-        print("⚠️ Erreur lors de la vérification :", e)
-        asyncio.run(bot.send_message(chat_id=telegram_chat_id, text=f"⚠️ Erreur lors de la vérification : {e}"))
+        print(f"⚠️ Erreur lors de la vérification : {e}")
+        await send_telegram_message(f"⚠️ Erreur lors de la vérification : {e}")
 
-# Boucle principale
-while True:
-    check_tls()
-    time.sleep(check_interval)
+async def main():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
+        page = await browser.new_page()
+
+        while True:
+            await check_tls(page)
+            await asyncio.sleep(CHECK_INTERVAL)
+
+if __name__ == "__main__":
+    asyncio.run(main())
