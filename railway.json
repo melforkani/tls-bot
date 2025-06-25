@@ -12,7 +12,7 @@
     "commands": [
       "pip install -r requirements.txt",
       "playwright install"
+      "chmod +x start.sh"
     ]
-  },
-  "start": "echo 'No start needed, only cron runs'"
+  }
 }
