@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "check": "python3 check_tls.py"
+    "check": "python3 check_tls.py",
+    "test": "python3 check_tls.py"
   },
   "crons": [
     {
