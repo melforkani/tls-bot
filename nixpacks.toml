@@ -1,0 +1,8 @@
+[phases.setup]
+aptPkgs = ["libgtk-3-0", "libx11-xcb1", "libnspr4", "libnss3"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt", "playwright install chromium"]
+
+[phases.start]
+cmd = "python3 keep_alive.py"
