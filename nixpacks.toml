@@ -2,7 +2,11 @@
 aptPkgs = ["libgtk-3-0", "libx11-xcb1", "libnspr4", "libnss3"]
 
 [phases.install]
-cmds = ["python3 -m pip install -r requirements.txt", "playwright install chromium"]
+cmds = [
+  "python3 -m pip install --upgrade pip",
+  "python3 -m pip install -r requirements.txt",
+  "playwright install chromium"
+]
 
 [phases.start]
-cmd = "python3 keep_alive.py"
+cmd = "python3 check_tls.py"
